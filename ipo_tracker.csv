@@ -1,27 +1,28 @@
-Company Name,IPO Opening Date,Listing Date,Issue Price,Listing Day Opening Price,Listing Day Closing Price
-,,,,,
-Runwal Enterprises Ltd.,25-Sep-2026,05-Oct-2026,305.0,,
-Orient Cables (India) Ltd.,25-Sep-2026,05-Oct-2026,272.0,,
-Acevector Ltd.,25-Sep-2026,05-Oct-2026,32.0,,
-Sai Urja Indo Ventures Ltd.,25-Sep-2026,05-Oct-2026,113.0,,
-A-One Steels India Ltd.,24-Sep-2026,01-Oct-2026,405.0,455.0,416.55
-Roopa Screen Ltd.,24-Sep-2026,01-Oct-2026,64.0,121.6,115.52
-Peshwa Wheat Ltd.,24-Sep-2026,01-Oct-2026,101.0,100.05,95.05
-Moneyview Ltd.,24-Sep-2026,01-Oct-2026,34.0,55.0,53.88
-ArMee Infotech Ltd.,23-Sep-2026,30-Sep-2026,375.0,375.0,300.0
-Swastika Infra Ltd.,23-Sep-2026,30-Sep-2026,185.0,200.0,210.0
-Coreintegra Consulting Services Ltd.,23-Sep-2026,30-Sep-2026,78.0,78.1,78.9
-Elevate Campuses Ltd.,23-Sep-2026,30-Sep-2026,362.0,355.1,322.95
-Pooja Logistics Ltd.,23-Sep-2026,30-Sep-2026,115.0,118.0,123.9
-Liqvd Digital India Ltd.,23-Sep-2026,30-Sep-2026,54.0,53.73,51.05
-Adroit Industries (India) Ltd.,23-Sep-2026,30-Sep-2026,134.0,235.0,248.39
-S.K.Offset Ltd.,23-Sep-2026,30-Sep-2026,125.0,126.0,126.35
-Unitec Fibres Ltd.,23-Sep-2026,30-Sep-2026,88.0,90.0,90.6
-Varmora Granito Ltd.,22-Sep-2026,29-Sep-2026,148.0,155.0,152.19
-Himalaya Nutravedics India Ltd.,22-Sep-2026,29-Sep-2026,106.0,118.0,122.9
-Anand Seamless Ltd.,22-Sep-2026,29-Sep-2026,72.0,72.1,72.1
-Vivekanand Cotspin Ltd.,21-Sep-2026,28-Sep-2026,37.0,38.0,39.9
-FX Multitech Ltd.,21-Sep-2026,28-Sep-2026,116.0,123.05,129.2
-Robokidz Eduventures Ltd.,21-Sep-2026,28-Sep-2026,106.0,201.4,211.45
-Axiom Gas Engineering Ltd.,18-Sep-2026,25-Sep-2026,54.0,54.75,54.05
-Kheria Autocomp Ltd.,17-Sep-2026,24-Sep-2026,101.0,104.9,103.05
+Company Name,IPO Close Date,IPO Opening Date,Issue Price,Listing Date,Listing Day Closing Price,Listing Day Opening Price
+A-One Steels India Ltd.,28-Sep-2026,24-Sep-2026,405.0,01-Oct-2026,416.55,455.0
+Acevector Ltd.,,25-Sep-2026,32.0,05-Oct-2026,,
+Adroit Industries (India) Ltd.,25-Sep-2026,23-Sep-2026,134.0,30-Sep-2026,248.39,235.0
+Anand Seamless Ltd.,24-Sep-2026,22-Sep-2026,72.0,29-Sep-2026,72.1,72.1
+ArMee Infotech Ltd.,25-Sep-2026,23-Sep-2026,375.0,30-Sep-2026,300.0,375.0
+Axiom Gas Engineering Ltd.,22-Sep-2026,18-Sep-2026,54.0,25-Sep-2026,54.05,54.75
+Coreintegra Consulting Services Ltd.,25-Sep-2026,23-Sep-2026,78.0,30-Sep-2026,78.9,78.1
+Elevate Campuses Ltd.,25-Sep-2026,23-Sep-2026,362.0,30-Sep-2026,322.95,355.1
+FX Multitech Ltd.,23-Sep-2026,21-Sep-2026,116.0,28-Sep-2026,129.2,123.05
+Himalaya Nutravedics India Ltd.,24-Sep-2026,22-Sep-2026,106.0,29-Sep-2026,122.9,118.0
+Kheria Autocomp Ltd.,21-Sep-2026,17-Sep-2026,101.0,24-Sep-2026,103.05,104.9
+Liqvd Digital India Ltd.,25-Sep-2026,23-Sep-2026,54.0,30-Sep-2026,51.05,53.73
+Moneyview Ltd.,28-Sep-2026,24-Sep-2026,34.0,01-Oct-2026,53.88,55.0
+Orient Cables (India) Ltd.,,25-Sep-2026,272.0,05-Oct-2026,,
+Peshwa Wheat Ltd.,28-Sep-2026,24-Sep-2026,101.0,01-Oct-2026,95.05,100.05
+Pooja Logistics Ltd.,25-Sep-2026,23-Sep-2026,115.0,30-Sep-2026,123.9,118.0
+Robokidz Eduventures Ltd.,23-Sep-2026,21-Sep-2026,106.0,28-Sep-2026,211.45,201.4
+Roopa Screen Ltd.,28-Sep-2026,24-Sep-2026,64.0,01-Oct-2026,115.52,121.6
+Runwal Enterprises Ltd.,,25-Sep-2026,305.0,05-Oct-2026,,
+S.K.Offset Ltd.,25-Sep-2026,23-Sep-2026,125.0,30-Sep-2026,126.35,126.0
+Sai Urja Indo Ventures Ltd.,,25-Sep-2026,113.0,05-Oct-2026,,
+Swastika Infra Ltd.,25-Sep-2026,23-Sep-2026,185.0,30-Sep-2026,210.0,200.0
+Unitec Fibres Ltd.,25-Sep-2026,23-Sep-2026,88.0,30-Sep-2026,90.6,90.0
+Varmora Granito Ltd.,24-Sep-2026,22-Sep-2026,148.0,29-Sep-2026,152.19,155.0
+Vivekanand Cotspin Ltd.,23-Sep-2026,21-Sep-2026,37.0,28-Sep-2026,39.9,38.0
+,,,,,,
+,,,,,,
