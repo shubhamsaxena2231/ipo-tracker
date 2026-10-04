@@ -1,5 +1,5 @@
 import pandas as pd
-import cloudscraper
+from curl_cffi import requests
 import os
 import sys
 import io
@@ -7,12 +7,10 @@ import io
 url = "https://www.chittorgarh.com/report/ipo_report_listing_day_gain/98/all/"
 
 try:
-    # 1. Initialize the Cloudflare bypass scraper
-    scraper = cloudscraper.create_scraper()
-    response = scraper.get(url)
-    response.raise_for_status()
+    # 1. Impersonate a real Chrome browser's TLS handshake to bypass Cloudflare
+    response = requests.get(url, impersonate="chrome")
     
-    # 2. Fetch live data (Wrapped in io.StringIO to fix the pandas FutureWarning)
+    # 2. Parse the HTML tables directly from the response
     df_live = pd.read_html(io.StringIO(response.text))[0]
 
     # 3. Map to your 6 required columns
