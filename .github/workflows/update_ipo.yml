@@ -19,10 +19,13 @@ jobs:
           python-version: '3.10'
           
       - name: Install dependencies
-        # Swapped cloudscraper for curl_cffi
-        run: pip install pandas curl_cffi lxml html5lib beautifulsoup4
+        # Reverted to standard requests since ScraperAPI handles the heavy lifting
+        run: pip install pandas requests lxml html5lib beautifulsoup4
         
       - name: Run Upsert Script
+        # This securely passes your saved key to the Python script
+        env:
+          SCRAPER_API_KEY: ${{ secrets.SCRAPER_API_KEY }}
         run: python scraper.py
         
       - name: Commit and Push Archive
