@@ -9,67 +9,67 @@ if not api_key:
     print("Pipeline failed: SCRAPER_API_KEY environment variable is missing.")
     sys.exit(1)
 
-target_url = "https://www.chittorgarh.com/report/ipo_report_listing_day_gain/98/all/"
-scraper_url = "http://api.scraperapi.com"
-
-payload = {
-    'api_key': api_key,
-    'url': target_url,
-    'render': 'true' 
-}
+def fetch_and_clean(url, keyword):
+    payload = {'api_key': api_key, 'url': url, 'render': 'true'}
+    res = requests.get("http://api.scraperapi.com", params=payload)
+    res.raise_for_status()
+    tables = pd.read_html(io.StringIO(res.text))
+    for t in tables:
+        # Strip out the hidden sorting arrows and whitespace
+        t.columns = t.columns.str.replace('▲▼', '', regex=False).str.strip()
+        # Return the table only if it contains our target column
+        if any(keyword.lower() in str(c).lower() for c in t.columns):
+            return t
+    raise ValueError(f"Could not find a table containing '{keyword}' at {url}")
 
 try:
-    print("Fetching data via ScraperAPI...")
-    response = requests.get(scraper_url, params=payload)
-    response.raise_for_status()
+    print("Fetching Performance Data...")
+    df_perf = fetch_and_clean("https://www.chittorgarh.com/report/ipo_report_listing_day_gain/98/all/", 'Listing Date')
     
-    # Extract ALL tables from the page
-    tables = pd.read_html(io.StringIO(response.text))
-    print(f"Found {len(tables)} tables on the webpage.")
+    print("Fetching Mainboard & SME Dates...")
+    df_main = fetch_and_clean("https://www.chittorgarh.com/report/mainboard-ipo-list-in-india-bse-nse/83/all/", 'Close')
+    df_sme = fetch_and_clean("https://www.chittorgarh.com/report/sme-ipo-list-in-india-bse-nse/84/all/", 'Close')
+    df_dates = pd.concat([df_main, df_sme], ignore_index=True)
     
-    # Hunt for the correct table by checking if it has a 'Listing Date' column
-    df_live = None
-    for i, tbl in enumerate(tables):
-        if any('Listing Date' in str(col) for col in tbl.columns):
-            df_live = tbl
-            print(f"Success: Found the IPO data in table index [{i}].")
-            break
-            
-    # This is the IF statement that caused the indentation error previously
-    if df_live is None:
-        print("Pipeline failed: Could not locate the main IPO table.")
-        sys.exit(1)
-
-    # Clean the column headers to strip out the hidden sorting arrows
-    df_live.columns = df_live.columns.str.replace('▲▼', '', regex=False).str.strip()
+    # 1. Dynamically identify Performance columns to avoid KeyErrors
+    perf_company = next(c for c in df_perf.columns if 'Company' in c)
+    listing_date = next(c for c in df_perf.columns if 'Listing Date' in c)
+    issue_price = next(c for c in df_perf.columns if 'Issue Price' in c)
+    open_price = next(c for c in df_perf.columns if 'Open Price' in c)
+    close_price = next(c for c in df_perf.columns if 'Close Price' in c)
     
-    # Select the available columns based on the cleaned headers
-    df_live = df_live[['Company', 'Opening Date', 'Listing Date', 'Issue Price (Rs.)', 'Open Price on Listing (Rs.)', 'Close Price on Listing (Rs.)']]
+    # 2. Dynamically identify Dates columns
+    dates_company = next(c for c in df_dates.columns if 'Company' in c or 'Issuer' in c)
+    close_date = next(c for c in df_dates.columns if 'Close' in c and 'Price' not in c)
     
-    # Rename them to your preferred, clean formats
-    df_live.columns = ['Company Name', 'IPO Opening Date', 'Listing Date', 'Issue Price', 'Listing Day Opening Price', 'Listing Day Closing Price']
+    # 3. Merge the authentic Close Date into the Performance table
+    df_close_dates = df_dates[[dates_company, close_date]].rename(columns={dates_company: perf_company, close_date: 'IPO Close Date'})
+    df_live = pd.merge(df_perf, df_close_dates, on=perf_company, how='left')
     
-    # Filter for dates from Sep 1, 2026 onwards
+    # 4. Final Formatting to your requested 6 columns
+    df_live = df_live[[perf_company, 'IPO Close Date', listing_date, issue_price, open_price, close_price]]
+    df_live.columns = ['Company Name', 'IPO Close Date', 'Listing Date', 'Issue Price', 'Listing Day Opening Price', 'Listing Day Closing Price']
+    
+    # 5. Filter from September 1, 2026
     df_live['Date_Temp'] = pd.to_datetime(df_live['Listing Date'], format='%d-%b-%Y', errors='coerce')
     cutoff_date = pd.to_datetime('2026-09-01')
-    
     df_live = df_live[(df_live['Date_Temp'] >= cutoff_date) | (df_live['Date_Temp'].isna())]
     df_live.drop(columns=['Date_Temp'], inplace=True)
-    
     df_live.set_index('Company Name', inplace=True)
     
-    # Perform the Lifetime Upsert
+    # 6. Upsert to CSV
     csv_file = 'ipo_tracker.csv'
     if os.path.exists(csv_file):
         df_existing = pd.read_csv(csv_file)
         df_existing.set_index('Company Name', inplace=True)
-        df_final = df_live.combine_first(df_existing)
+        # combine_first patches the newly fetched Close Dates straight into your existing CSV rows
+        df_final = df_live.combine_first(df_existing) 
     else:
         df_final = df_live
         
     df_final.reset_index().to_csv(csv_file, index=False)
-    print("IPO Tracker updated successfully.")
-    
+    print("IPO Tracker updated with Close Dates successfully.")
+
 except Exception as e:
     print(f"Pipeline failed: {e}")
     sys.exit(1)
