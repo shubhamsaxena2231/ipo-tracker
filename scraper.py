@@ -30,32 +30,26 @@ try:
     # Hunt for the correct table by checking if it has a 'Listing Date' column
     df_live = None
     for i, tbl in enumerate(tables):
-        # We check for a highly probable partial match in the columns
         if any('Listing Date' in str(col) for col in tbl.columns):
             df_live = tbl
             print(f"Success: Found the IPO data in table index [{i}].")
-            print(f"Actual columns found: {df_live.columns.tolist()}")
             break
             
+    # This is the IF statement that caused the indentation error previously
     if df_live is None:
-     # Clean the column headers to strip out the hidden sorting arrows
+        print("Pipeline failed: Could not locate the main IPO table.")
+        sys.exit(1)
+
+    # Clean the column headers to strip out the hidden sorting arrows
     df_live.columns = df_live.columns.str.replace('▲▼', '', regex=False).str.strip()
     
-    # Select the available columns based on the cleaned headers. 
-    # Note: Since Chittorgarh removed 'Close Date', we must substitute it with 'Opening Date'.
+    # Select the available columns based on the cleaned headers
     df_live = df_live[['Company', 'Opening Date', 'Listing Date', 'Issue Price (Rs.)', 'Open Price on Listing (Rs.)', 'Close Price on Listing (Rs.)']]
     
     # Rename them to your preferred, clean formats
     df_live.columns = ['Company Name', 'IPO Opening Date', 'Listing Date', 'Issue Price', 'Listing Day Opening Price', 'Listing Day Closing Price']
-        for i, tbl in enumerate(tables):
-            print(f"Table [{i}]: {tbl.columns.tolist()}")
-        sys.exit(1)
-
-    # Note: If this step fails again, you will need to look at the "Actual columns found" 
-    # printed in the log and update the exact strings in the list below.
-    df_live = df_live[['Company', 'Close Date', 'Listing Date', 'Issue Price', 'Open Price on Listing (Rs.)', 'Close Price on Listing Date (Rs.)']]
-    df_live.columns = ['Company Name', 'IPO Close Date', 'Listing Date', 'Issue Price', 'Listing Day Opening Price', 'Listing Day Closing Price']
     
+    # Filter for dates from Sep 1, 2026 onwards
     df_live['Date_Temp'] = pd.to_datetime(df_live['Listing Date'], format='%d-%b-%Y', errors='coerce')
     cutoff_date = pd.to_datetime('2026-09-01')
     
@@ -64,6 +58,7 @@ try:
     
     df_live.set_index('Company Name', inplace=True)
     
+    # Perform the Lifetime Upsert
     csv_file = 'ipo_tracker.csv'
     if os.path.exists(csv_file):
         df_existing = pd.read_csv(csv_file)
