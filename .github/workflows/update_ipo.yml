@@ -1,14 +1,13 @@
 name: Lifetime IPO Tracker
 on:
   schedule:
-    - cron: '30 14 * * 1-5' # Runs at 8:00 PM IST on weekdays
-  workflow_dispatch: # Allows manual trigger
+    - cron: '30 14 * * 1-5' 
+  workflow_dispatch: 
 
 jobs:
   update-data:
     runs-on: ubuntu-latest
     
-    # Explicitly grants the GitHub Actions bot permission to save the CSV back to the repo
     permissions:
       contents: write 
       
@@ -20,8 +19,8 @@ jobs:
           python-version: '3.10'
           
       - name: Install dependencies
-        # Uses cloudscraper instead of requests to bypass the anti-bot wall
-        run: pip install pandas cloudscraper lxml html5lib beautifulsoup4
+        # Swapped cloudscraper for curl_cffi
+        run: pip install pandas curl_cffi lxml html5lib beautifulsoup4
         
       - name: Run Upsert Script
         run: python scraper.py
