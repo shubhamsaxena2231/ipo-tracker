@@ -38,8 +38,15 @@ try:
             break
             
     if df_live is None:
-        print("Pipeline failed: Could not locate the main IPO table.")
-        print("Here are the columns of the tables we did find:")
+     # Clean the column headers to strip out the hidden sorting arrows
+    df_live.columns = df_live.columns.str.replace('▲▼', '', regex=False).str.strip()
+    
+    # Select the available columns based on the cleaned headers. 
+    # Note: Since Chittorgarh removed 'Close Date', we must substitute it with 'Opening Date'.
+    df_live = df_live[['Company', 'Opening Date', 'Listing Date', 'Issue Price (Rs.)', 'Open Price on Listing (Rs.)', 'Close Price on Listing (Rs.)']]
+    
+    # Rename them to your preferred, clean formats
+    df_live.columns = ['Company Name', 'IPO Opening Date', 'Listing Date', 'Issue Price', 'Listing Day Opening Price', 'Listing Day Closing Price']
         for i, tbl in enumerate(tables):
             print(f"Table [{i}]: {tbl.columns.tolist()}")
         sys.exit(1)
