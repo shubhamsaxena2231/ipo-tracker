@@ -17,7 +17,6 @@ def fetch_and_clean(url, target_keyword):
     for attempt in range(max_retries):
         try:
             print(f"Attempt {attempt + 1} of {max_retries} for {url}...")
-            # Added a 90-second timeout so it doesn't hang indefinitely
             res = requests.get("http://api.scraperapi.com", params=payload, timeout=90)
             res.raise_for_status()
             
@@ -27,7 +26,7 @@ def fetch_and_clean(url, target_keyword):
                 print(f"No HTML tables found. ScraperAPI may have hit a CAPTCHA.")
                 if attempt < max_retries - 1:
                     time.sleep(10)
-                    continue # Try again
+                    continue 
                 else:
                     print("Max retries reached. Pipeline failed.")
                     sys.exit(1)
@@ -62,6 +61,10 @@ try:
     
     df_dates = pd.concat([df_main, df_sme], ignore_index=True)
     
+    # Debugging output to expose the exact column structures in the GitHub logs
+    print(f"Performance Columns: {df_perf.columns.tolist()}")
+    print(f"Dates Columns: {df_dates.columns.tolist()}")
+    
     # 1. Dynamically identify Performance columns
     perf_company = next(c for c in df_perf.columns if 'Company' in c)
     listing_date = next(c for c in df_perf.columns if 'Listing Date' in c)
@@ -69,9 +72,12 @@ try:
     open_price = next(c for c in df_perf.columns if 'Open Price' in c)
     close_price = next(c for c in df_perf.columns if 'Close Price' in c)
     
-    # 2. Dynamically identify Dates columns
-    dates_company = next((c for c in df_dates.columns if 'Company' in c or 'Issuer' in c), None)
-    close_date = next((c for c in df_dates.columns if 'Close' in c and 'Price' not in c), None)
+    # 2. Dynamically identify Dates columns using broadened vocabularies
+    dates_company_candidates = ['Company', 'Issuer', 'IPO Name', 'Name']
+    close_date_candidates = ['Close', 'Closing', 'Ends', 'End Date']
+    
+    dates_company = next((c for c in df_dates.columns if any(cand.lower() in str(c).lower() for cand in dates_company_candidates)), None)
+    close_date = next((c for c in df_dates.columns if any(cand.lower() in str(c).lower() for cand in close_date_candidates) and 'price' not in str(c).lower()), None)
     
     if not dates_company or not close_date:
         print("Pipeline failed: The IPO dates table is missing the Company or Close column.")
