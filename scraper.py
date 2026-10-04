@@ -3,6 +3,7 @@ import requests
 import os
 import sys
 import io
+import time
 
 api_key = os.environ.get('SCRAPER_API_KEY')
 if not api_key:
@@ -11,31 +12,48 @@ if not api_key:
 
 def fetch_and_clean(url, target_keyword):
     payload = {'api_key': api_key, 'url': url, 'render': 'true'}
-    res = requests.get("http://api.scraperapi.com", params=payload)
-    res.raise_for_status()
+    max_retries = 3
     
-    try:
-        tables = pd.read_html(io.StringIO(res.text))
-    except ValueError:
-        print(f"Pipeline failed: No HTML tables found at {url}. ScraperAPI may have hit a CAPTCHA.")
-        sys.exit(1)
-        
-    for i, t in enumerate(tables):
-        t.columns = t.columns.str.replace('▲▼', '', regex=False).str.strip()
-        # Look for a widely used column to confirm this is the authentic IPO table
-        if any(target_keyword.lower() in str(c).lower() for c in t.columns):
-            return t
+    for attempt in range(max_retries):
+        try:
+            print(f"Attempt {attempt + 1} of {max_retries} for {url}...")
+            # Added a 90-second timeout so it doesn't hang indefinitely
+            res = requests.get("http://api.scraperapi.com", params=payload, timeout=90)
+            res.raise_for_status()
             
-    # If the target keyword is missing, print what was actually found to the logs
-    print(f"Error: Could not find the main IPO table containing '{target_keyword}' at {url}.")
-    print("Instead, we found these tables (this indicates a column rename or a block):")
-    for i, t in enumerate(tables):
-        print(f"Table [{i}] Columns: {t.columns.tolist()}")
-    sys.exit(1)
+            try:
+                tables = pd.read_html(io.StringIO(res.text))
+            except ValueError:
+                print(f"No HTML tables found. ScraperAPI may have hit a CAPTCHA.")
+                if attempt < max_retries - 1:
+                    time.sleep(10)
+                    continue # Try again
+                else:
+                    print("Max retries reached. Pipeline failed.")
+                    sys.exit(1)
+                
+            for i, t in enumerate(tables):
+                t.columns = t.columns.str.replace('▲▼', '', regex=False).str.strip()
+                if any(target_keyword.lower() in str(c).lower() for c in t.columns):
+                    print(f"Success: Found the target table on attempt {attempt + 1}.")
+                    return t
+                    
+            print(f"Error: Could not find the main IPO table containing '{target_keyword}'.")
+            for i, t in enumerate(tables):
+                print(f"Table [{i}] Columns: {t.columns.tolist()}")
+            sys.exit(1)
+            
+        except Exception as e:
+            print(f"Error on attempt {attempt + 1}: {e}")
+            if attempt < max_retries - 1:
+                print("Sleeping for 10 seconds before retrying...")
+                time.sleep(10)
+            else:
+                print("Max retries reached. Failing pipeline.")
+                sys.exit(1)
 
 try:
     print("Fetching Performance Data...")
-    # 'Listing Date' is on all three pages, making it a stronger universal anchor than 'Close'
     df_perf = fetch_and_clean("https://www.chittorgarh.com/report/ipo_report_listing_day_gain/98/all/", 'Listing Date')
     
     print("Fetching Mainboard & SME Dates...")
@@ -51,14 +69,12 @@ try:
     open_price = next(c for c in df_perf.columns if 'Open Price' in c)
     close_price = next(c for c in df_perf.columns if 'Close Price' in c)
     
-    # 2. Dynamically identify Dates columns using safe lookups
+    # 2. Dynamically identify Dates columns
     dates_company = next((c for c in df_dates.columns if 'Company' in c or 'Issuer' in c), None)
     close_date = next((c for c in df_dates.columns if 'Close' in c and 'Price' not in c), None)
     
-    # If the exact column names changed, this stops the pipeline and prints the new names
     if not dates_company or not close_date:
         print("Pipeline failed: The IPO dates table is missing the Company or Close column.")
-        print(f"Available columns are: {df_dates.columns.tolist()}")
         sys.exit(1)
         
     # 3. Merge the authentic Close Date into the Performance table
